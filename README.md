@@ -1,105 +1,137 @@
-Sistema de Agendamento para Barbearia
+# 💈 Sistema de Agendamento para Barbearia
 
-Descrição do Programa
-Este projeto é um sistema de agendamento para uma barbearia, desenvolvido em Java com interface gráfica Swing. O sistema permite:
-- Cadastrar clientes (com validação e máscara de CPF e telefone).
-- Listar clientes (com caixa de pesquisa por nome).
-- Excluir clientes via lista clicável.
-- Agendar serviços (corte de cabelo, barba ou combo), selecionando data e hora separadamente.
-- Não permite horários passados.
-- Garante um intervalo mínimo de 30 minutos entre agendamentos.
-- Listar agendamentos com exibição de data e hora separadas.
-- Cancelar agendamentos via lista clicável.
-- Gerar log de todas as operações (cadastro, exclusão, agendamento, cancelamento) no arquivo sistema_log.txt.
+Sistema desktop para agendamento de serviços de uma barbearia, desenvolvido em **Java** com interface gráfica **Swing** e banco de dados **MySQL**.
 
-Pré-requisitos
-1. Java Development Kit (JDK) 11 ou superior instalado e configurado no PATH.
-2. MySQL em execução local (porta padrão: 3306).
-3. Driver JDBC do MySQL (mysql-connector-java-x.x.x.jar) adicionado ao classpath.
-4. IDE ou editor compatível com Java (Eclipse, IntelliJ, VSCode, etc.).
-Estrutura do Banco de Dados
+## ✨ Funcionalidades
 
-Banco: salaodb
-Tabelas:
-clientes:
-CREATE TABLE clientes (
-id INT AUTO_INCREMENT PRIMARY KEY,
-nome VARCHAR(100) NOT NULL,
-telefone VARCHAR(15) NOT NULL,
-cpf VARCHAR(14) NOT NULL
-);
-agendamentos:
-CREATE TABLE agendamentos (
-id INT AUTO_INCREMENT PRIMARY KEY,
-cliente_id INT NOT NULL,
-data_hora DATETIME NOT NULL,
-servico VARCHAR(50) NOT NULL,
-preco DECIMAL(7,2) NOT NULL,
-FOREIGN KEY (cliente_id) REFERENCES clientes(id)
-);
+- Cadastrar clientes, com máscara e validação de telefone e CPF
+- Listar clientes, com caixa de pesquisa
+- Excluir clientes por uma lista clicável
+- Agendar serviços (corte de cabelo, barba ou combo), escolhendo data e hora separadamente
+- Bloquear horários no passado
+- Garantir intervalo mínimo de 30 minutos entre agendamentos
+- Listar agendamentos, com data e hora separadas
+- Cancelar agendamentos por uma lista clicável
+- Registrar todas as operações no arquivo `sistema_log.txt`
 
-Como Compilar e Executar
-Estrutura sugerida de pastas:
-/AppBarbeariaV3
+### Serviços e preços
+
+| Serviço                 | Preço  |
+|-------------------------|--------|
+| Corte de cabelo         | R$ 30  |
+| Barba                   | R$ 25  |
+| Combo (Corte + Barba)   | R$ 55  |
+
+## 🧰 Tecnologias
+
+- Java (JDK 17 ou superior)
+- Swing (interface gráfica)
+- MySQL 8
+- JDBC (MySQL Connector/J 9.3.0)
+
+## 📁 Estrutura do projeto
+
+O código está no arquivo `AppBarbeariaV3.zip`. Depois de extrair, a estrutura é:
+
+```
+AppBarbeariaV3/
 ├── lib/
-│   └── mysql-connector-java-8.0.x.jar
+│   └── mysql-connector-j-9.3.0.jar
 ├── src/
-│   ├── Database.java
-│   ├── Logger.java
-│   ├── SalaoDAO.java
-│   └── SistemaGUI.java
+│   ├── Main.java           # ponto de entrada
+│   ├── SistemaGUI.java     # janela principal
+│   ├── SalaoDAO.java       # regras de negócio e acesso ao banco
+│   ├── Database.java       # conexão com o MySQL
+│   └── Logger.java         # geração do log
+├── salaodb.sql             # script do banco de dados
 └── README.md
+```
 
-Importando script no MySQLWorkbench(alternativa)
-1. Execute o MySQl, abra o servidor na maquina
-2. No ambiente de desenvolvimento coloque "create database salaodb"
-3. Após criar o banco: server>data import>AppBarbeariaV3>salaodb.ql
+## 🗄️ Banco de dados
 
-Compilação via linha de comando:
-Windows:
+Banco: `salaodb`
+
+```sql
+CREATE TABLE clientes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(100) NOT NULL,
+  cpf VARCHAR(14),
+  telefone VARCHAR(20)
+);
+
+CREATE TABLE agendamentos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  cliente_id INT,
+  data_hora DATETIME,
+  servico VARCHAR(100),
+  preco DECIMAL(10,2),
+  FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+);
+```
+
+## 🚀 Como executar
+
+### 1. Pré-requisitos
+
+- JDK 17 ou superior instalado e configurado no PATH
+- MySQL em execução local (porta padrão `3306`)
+
+### 2. Preparar o banco
+
+Crie o banco e importe o script `salaodb.sql`:
+
+```sql
+CREATE DATABASE salaodb;
+```
+
+```bash
+mysql -u root -p salaodb < salaodb.sql
+```
+
+Alternativa: no MySQL Workbench, vá em **Server → Data Import** e selecione o arquivo `salaodb.sql`.
+
+### 3. Configurar as credenciais
+
+Abra `src/Database.java` e ajuste o usuário e a senha para os do seu MySQL:
+
+```java
+String user = "root";
+String password = "admin";
+```
+
+### 4. Compilar
+
+```bash
 cd AppBarbeariaV3
-javac -cp "lib/mysql-connector-java-8.0.x.jar" src\Database.java src\Logger.java src\SalaoDAO.java src\SistemaGUI.java
-Linux/macOS:
-cd AppBarbeariaV3
-javac -cp "lib/mysql-connector-java-8.0.x.jar:src" src/Database.java src/Logger.java src/SalaoDAO.java src/SistemaGUI.java
-Execução:
-Windows:
-java -cp "lib/mysql-connector-java-8.0.x.jar;src" SistemaGUI
-Linux/macOS:
-java -cp "lib/mysql-connector-java-8.0.x.jar:src" SistemaGUI
+javac -encoding UTF-8 -cp "lib/mysql-connector-j-9.3.0.jar" -d bin src/*.java
+```
 
-Execução via IDE:
+### 5. Executar
+
+**Windows:**
+```bash
+java -cp "bin;lib/mysql-connector-j-9.3.0.jar" Main
+```
+
+**Linux / macOS:**
+```bash
+java -cp "bin:lib/mysql-connector-j-9.3.0.jar" Main
+```
+
+### Pela IDE (Eclipse, IntelliJ, VS Code)
+
 1. Abra a pasta do projeto.
-2. Adicione lib/mysql-connector-java-8.0.x.jar como biblioteca externa.
-3. Marque a pasta src/ como diretório de código-fonte.
-4. Execute a classe SistemaGUI.
+2. Adicione `lib/mysql-connector-j-9.3.0.jar` como biblioteca externa.
+3. Marque `src/` como pasta de código-fonte.
+4. Execute a classe **`Main`**.
 
-Funcionalidades
-Cadastro de Cliente:
-- Campos: nome, telefone, CPF
-- Validações: nome não pode estar vazio, telefone e CPF devem estar completos
-Listagem de Clientes:
-- Campo de pesquisa que filtra a lista em tempo real
-Exclusão de Cliente:
-- Lista de clientes com seleção e confirmação de exclusão
-Agendamento de Serviço:
-- Selecionar cliente, serviço, data e hora
-- Validações de data/hora passada e conflitos de horário
-Listagem de Agendamentos:
-- Exibição formatada dos dados agendados
-Cancelamento de Agendamento:
-- Lista de agendamentos para seleção e cancelamento
+## 📝 Logs
 
-Classes Principais
-Database.java: gerencia conexão com o MySQL
-Logger.java: registra logs no arquivo sistema_log.txt
-SalaoDAO.java: implementa as funcionalidades de CRUD e agendamento
-SistemaGUI.java: interface gráfica principal e ponto de entrada (main)
-Logs
-Todas as ações relevantes são registradas em sistema_log.txt com data e hora.
+Todas as ações relevantes (cadastro, exclusão, agendamento, cancelamento e erros) são registradas, com data e hora, em `sistema_log.txt`.
 
-Observações Finais
-- Garanta que o driver JDBC esteja disponível no classpath antes de executar.
-- Ajuste as credenciais de banco (usuário/senha) no método Database.connect() conforme seu ambiente.
-- Caso deseje alterar os formatos de data/hora, basta modificar os padrões usados no DateTimeFormatter ou nas máscaras dos JSpinner.
-- Este projeto pode ser facilmente estendido para incluir mais serviços, geração de relatórios ou integração com tecnologias como Hibernate, JavaFX, entre outras.
+## 🔮 Ideias para evolução
+
+- Relatórios de faturamento
+- Mais serviços e profissionais
+- Migração da interface para JavaFX
+- Integração com Hibernate/JPA
